@@ -114,7 +114,7 @@
   }
   .hero-meta{
     position:absolute;
-    bottom:30px;
+    bottom:64px;
     left:8vw;right:8vw;
     display:flex;
     justify-content:space-between;
@@ -296,8 +296,12 @@
     padding:6px 12px;
   }
   #player button{
+    -webkit-appearance:none;
+    appearance:none;
     background:transparent;
     border:none;
+    outline:none;
+    box-shadow:none;
     color:var(--fg);
     font-family:inherit;
     font-weight:300;
@@ -305,8 +309,9 @@
     letter-spacing:0.03em;
     padding:8px 14px;
     cursor:pointer;
+    transition:color 0.15s ease;
   }
-  #player button:hover{background:var(--fg);color:var(--bg);}
+  #player button:hover{color:var(--dim);}
 
   #volumeSlider{
     -webkit-appearance:none;
@@ -579,9 +584,12 @@
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
+    const isMobileViewport = window.innerWidth <= 700;
+
     function sizeToHero(){
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
+      const baseW = heroSection.clientWidth;
+      const h = heroSection.clientHeight;
+      const w = isMobileViewport ? baseW * 2 : baseW;
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
@@ -620,7 +628,6 @@
       return tex;
     }
 
-    const isMobileViewport = window.innerWidth <= 700;
     const radius = isMobileViewport ? 1.25 : 1.9;
     const petalW = isMobileViewport ? 0.62 : 0.92;
     const petalH = isMobileViewport ? 0.82 : 1.21;
