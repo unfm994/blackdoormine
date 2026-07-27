@@ -86,6 +86,9 @@
     display:block;
     touch-action:pan-y;
   }
+  @media (max-width:700px){
+    #flowerCanvas{width:200%;}
+  }
   .hero-overlay{
     position:absolute;
     top:0;left:0;
@@ -290,9 +293,6 @@
     display:flex;
     align-items:center;
     gap:10px;
-    background:rgba(236,236,234,0.92);
-    -webkit-backdrop-filter:blur(2px);
-    backdrop-filter:blur(2px);
     padding:6px 12px;
   }
   #player button{
@@ -315,7 +315,6 @@
     height:24px;
     background:transparent;
     cursor:pointer;
-    touch-action:none;
   }
   /* track */
   #volumeSlider::-webkit-slider-runnable-track{
@@ -507,24 +506,13 @@
 
   // ---------- lookbook placeholder slots ----------
   const grid = document.getElementById('lookbookGrid');
-  const looks = [
-    ['look_001','silhouette 01','technical cotton / raw edge'],
-    ['look_002','silhouette 02','bonded wool / sealed seam'],
-    ['look_003','silhouette 03','nylon ripstop / utility cut'],
-    ['look_004','silhouette 04','washed canvas / open hem'],
-    ['look_005','silhouette 05','compressed fleece / mono panel'],
-    ['look_006','silhouette 06','waxed cotton / exposed seam'],
-  ];
-  looks.forEach(([idx, cap, spec]) => {
+  const looks = ['look_001', 'look_002', 'look_003', 'look_004', 'look_005', 'look_006'];
+  looks.forEach((idx) => {
     const frame = document.createElement('div');
     frame.className = 'frame';
     frame.innerHTML = `
       <div class="fill"><div class="slot-txt">drop mockup here<br>${idx}</div></div>
       <div class="idx">${idx}</div>
-      <div class="cap">
-        <div><span>${cap}</span><span>rtw</span></div>
-        <div class="spec">${spec}</div>
-      </div>
     `;
     grid.appendChild(frame);
   });
@@ -592,8 +580,8 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
     function sizeToHero(){
-      const w = heroSection.clientWidth;
-      const h = heroSection.clientHeight;
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
@@ -602,7 +590,7 @@
     window.addEventListener('resize', sizeToHero);
 
     // draw a texture per petal that matches the site's own placeholder-frame look
-    function makePetalTexture(idx, cap, hovered){
+    function makePetalTexture(idx, hovered){
       const c = document.createElement('canvas');
       c.width = 320; c.height = 420;
       const ctx = c.getContext('2d');
@@ -627,28 +615,27 @@
       ctx.font = '13px "Courier New", monospace';
       ctx.fillText('drop mockup here', c.width / 2, c.height / 2 - 8);
       ctx.fillText(idx, c.width / 2, c.height / 2 + 10);
-      ctx.textAlign = 'left';
-      ctx.fillStyle = hovered ? '#1c1c1a' : '#8f8f89';
-      ctx.font = '13px "Courier New", monospace';
-      ctx.fillText(cap, 18, c.height - 28);
       const tex = new THREE.CanvasTexture(c);
       tex.needsUpdate = true;
       return tex;
     }
 
-    const radius = 1.9;
-    const petals = looks.map(([idx, cap, spec], i) => {
+    const isMobileViewport = window.innerWidth <= 700;
+    const radius = isMobileViewport ? 1.25 : 1.9;
+    const petalW = isMobileViewport ? 0.62 : 0.92;
+    const petalH = isMobileViewport ? 0.82 : 1.21;
+    const petals = looks.map((idx, i) => {
       const baseAngle = (i / looks.length) * Math.PI * 2;
-      const geo = new THREE.PlaneGeometry(0.92, 1.21);
+      const geo = new THREE.PlaneGeometry(petalW, petalH);
       const mat = new THREE.MeshBasicMaterial({
-        map: makePetalTexture(idx, cap, false),
+        map: makePetalTexture(idx, false),
         transparent: true,
         side: THREE.DoubleSide
       });
       const mesh = new THREE.Mesh(geo, mat);
       scene.add(mesh);
       return {
-        mesh, mat, baseAngle, idx, cap, spec,
+        mesh, mat, baseAngle, idx,
         scale: 1, targetScale: 1,
         lift: 0, targetLift: 0
       };
@@ -664,16 +651,16 @@
       if (hovered) {
         hovered.targetScale = 1;
         hovered.targetLift = 0;
-        hovered.mat.map = makePetalTexture(hovered.idx, hovered.cap, false);
+        hovered.mat.map = makePetalTexture(hovered.idx, false);
         hovered.mat.map.needsUpdate = true;
       }
       hovered = petal;
       if (hovered) {
         hovered.targetScale = 1.3;
         hovered.targetLift = 1.1;
-        hovered.mat.map = makePetalTexture(hovered.idx, hovered.cap, true);
+        hovered.mat.map = makePetalTexture(hovered.idx, true);
         hovered.mat.map.needsUpdate = true;
-        captionEl.textContent = `${hovered.cap} — ${hovered.spec}`;
+        captionEl.textContent = hovered.idx;
       } else {
         captionEl.textContent = 'hover or tap to explore';
       }
