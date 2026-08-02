@@ -633,6 +633,17 @@
     sizeToHero();
     window.addEventListener('resize', sizeToHero);
 
+    // TEMP DEBUG — remove once mobile sizing is confirmed fixed
+    const __dbg = document.createElement('div');
+    __dbg.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#000;color:#0f0;font:11px monospace;padding:6px;z-index:9999;white-space:pre-wrap;';
+    document.body.appendChild(__dbg);
+    function __updateDbg(){
+      __dbg.textContent = 'mobile:' + isMobileViewport + ' innerW:' + window.innerWidth
+        + ' heroW:' + heroSection.clientWidth + ' heroH:' + heroSection.clientHeight
+        + ' aspect:' + camera.aspect.toFixed(2) + ' dpr:' + (window.devicePixelRatio || 1);
+    }
+    setTimeout(__updateDbg, 300);
+
     // draw a texture per track slot — same placeholder-frame language as the rest of the site
     function paintCard(ctx, w, h, idx, active){
       ctx.fillStyle = active ? '#f4f4f2' : '#e3e3e0';
