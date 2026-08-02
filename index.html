@@ -626,23 +626,19 @@
     function sizeToHero(){
       const w = heroSection.clientWidth;
       const h = heroSection.clientHeight;
+      if (!w || !h) return; // guard against a transient 0-size read
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
     }
     sizeToHero();
     window.addEventListener('resize', sizeToHero);
-
-    // TEMP DEBUG — remove once mobile sizing is confirmed fixed
-    const __dbg = document.createElement('div');
-    __dbg.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#000;color:#0f0;font:11px monospace;padding:6px;z-index:9999;white-space:pre-wrap;';
-    document.body.appendChild(__dbg);
-    function __updateDbg(){
-      __dbg.textContent = 'mobile:' + isMobileViewport + ' innerW:' + window.innerWidth
-        + ' heroW:' + heroSection.clientWidth + ' heroH:' + heroSection.clientHeight
-        + ' aspect:' + camera.aspect.toFixed(2) + ' dpr:' + (window.devicePixelRatio || 1);
-    }
-    setTimeout(__updateDbg, 300);
+    window.addEventListener('orientationchange', sizeToHero);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', sizeToHero);
+    // iOS Safari's address bar can still be animating right at load, which throws off
+    // the very first height read — re-check shortly after so the camera settles correctly.
+    setTimeout(sizeToHero, 300);
+    setTimeout(sizeToHero, 1000);
 
     // draw a texture per track slot — same placeholder-frame language as the rest of the site
     function paintCard(ctx, w, h, idx, active){
