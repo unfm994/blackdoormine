@@ -139,14 +139,34 @@
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
+    function sizeMainExplicitly(){
+      const header = document.querySelector('header');
+      const available = window.innerHeight - header.offsetHeight;
+      heroSection.style.height = available + 'px';
+    }
+
     function sizeToHero(){
       const w = heroSection.clientWidth;
       const h = heroSection.clientHeight;
+      if (w === 0 || h === 0) return; // never hand the renderer a degenerate size
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
     }
+
+    sizeMainExplicitly();
+    sizeToHero();
     new ResizeObserver(sizeToHero).observe(heroSection);
+    window.addEventListener('resize', function(){
+      sizeMainExplicitly();
+      sizeToHero();
+    });
+    window.addEventListener('orientationchange', function(){
+      setTimeout(function(){
+        sizeMainExplicitly();
+        sizeToHero();
+      }, 100);
+    });
 
     // ---------- build one item's artwork texture ----------
     function makeArtCanvas(idx, active){
