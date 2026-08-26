@@ -18,10 +18,6 @@
     background:#000000;
   }
   body{
-    display:flex;
-    flex-direction:column;
-    height:100vh;
-    height:100dvh;
     opacity:0;
     transition:opacity 0.25s ease;
   }
@@ -32,16 +28,20 @@
     opacity:0;
   }
   header{
-    flex:0 0 auto;
+    position:fixed;
+    top:0;left:0;right:0;
+    z-index:10;
     display:flex;
     align-items:center;
     justify-content:center;
     padding:24px 0;
+    pointer-events:none;
   }
   header .logo-btn{
     display:inline-block;
     line-height:0;
     cursor:pointer;
+    pointer-events:auto;
     -webkit-tap-highlight-color:transparent;
     transition:opacity 0.15s ease;
   }
@@ -58,12 +58,11 @@
     -webkit-touch-callout:none;
   }
   main{
-    flex:1 1 auto;
-    position:relative;
-    min-height:0;
+    position:fixed;
+    inset:0;
   }
   #designCanvas{
-    position:absolute;
+    position:fixed;
     inset:0;
     display:block;
     touch-action:none;
@@ -139,33 +138,18 @@
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
-    function sizeMainExplicitly(){
-      const header = document.querySelector('header');
-      const available = window.innerHeight - header.offsetHeight;
-      heroSection.style.height = available + 'px';
-    }
-
     function sizeToHero(){
-      const w = heroSection.clientWidth;
-      const h = heroSection.clientHeight;
-      if (w === 0 || h === 0) return; // never hand the renderer a degenerate size
+      const w = window.innerWidth;
+      const h = window.innerHeight;
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
     }
 
-    sizeMainExplicitly();
     sizeToHero();
-    new ResizeObserver(sizeToHero).observe(heroSection);
-    window.addEventListener('resize', function(){
-      sizeMainExplicitly();
-      sizeToHero();
-    });
+    window.addEventListener('resize', sizeToHero);
     window.addEventListener('orientationchange', function(){
-      setTimeout(function(){
-        sizeMainExplicitly();
-        sizeToHero();
-      }, 100);
+      setTimeout(sizeToHero, 100);
     });
 
     // ---------- build one item's artwork texture ----------
