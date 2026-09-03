@@ -251,7 +251,7 @@
     const isMobileViewport = window.innerWidth <= 700;
     const ITEM_SIZE = isMobileViewport ? 1.0 : 1.4;
     const REFLECTION_RATIO = 0.55;
-    const spacing = ITEM_SIZE * 0.85; // real separation — doing the clearance work instead of relying on tilt angle alone
+    const spacing = ITEM_SIZE * 0.97; // final small nudge — was just barely touching before
     const depthStep = 3.2;
 
     const items = [];
@@ -420,11 +420,28 @@
     let dwellSince = 0;
     let playingItem = null;
 
-    function stopPlaying(){
-      if (playingItem && playingItem.audioEl) {
-        playingItem.audioEl.pause();
-        playingItem.audioEl.currentTime = 0;
+    function fadeOutAndStop(item){
+      if (!item || !item.audioEl) return;
+      const audioEl = item.audioEl;
+      const fadeDuration = 350;
+      const startVolume = audioEl.volume;
+      const startTime = performance.now();
+      function step(now){
+        const t = Math.min(1, (now - startTime) / fadeDuration);
+        audioEl.volume = startVolume * (1 - t);
+        if (t < 1) {
+          requestAnimationFrame(step);
+        } else {
+          audioEl.pause();
+          audioEl.currentTime = 0;
+          audioEl.volume = 1; // reset so it's back to full volume next time it plays
+        }
       }
+      requestAnimationFrame(step);
+    }
+
+    function stopPlaying(){
+      fadeOutAndStop(playingItem);
       playingItem = null;
       captionEl.classList.remove('visible');
     }
@@ -466,9 +483,11 @@
       // wrapped nearest slot, for the "which one is centered right now" checks
       const centeredIndex = ((Math.round(offset) % count) + count) % count;
 
-      // one shared "focus target" drives both the bright-fade and the audio dwell timer:
-      // hover takes priority (desktop), falls back to whichever is centered (touch/idle)
-      const focusTarget = hoveredItem || items[centeredIndex];
+      // hover always counts immediately, but the "centered" item only counts once we're
+      // genuinely at rest — otherwise this flickers mid-transition and the dwell timer
+      // never gets a clean second to count up
+      const isSettled = !dragging && velocity === 0 && settleTarget === null;
+      const focusTarget = hoveredItem || (isSettled ? items[centeredIndex] : null);
 
       if (focusTarget !== dwellTarget) {
         dwellTarget = focusTarget;
