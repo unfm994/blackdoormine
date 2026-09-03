@@ -245,7 +245,6 @@
       }
     };
     const PREVIEW_LIMIT_SECONDS = 60;
-    const FOCUS_DWELL_MS = 1000;
 
     // ---------- build one item's artwork texture — plain white, or a real cover once loaded ----------
     function makeArtCanvas(coverImg){
@@ -451,8 +450,7 @@
     const captionEl = document.getElementById('trackCaption');
     const captionTitleEl = captionEl.querySelector('.track-title');
     const captionArtistEl = captionEl.querySelector('.track-artist');
-    let dwellTarget = null;
-    let dwellSince = 0;
+    let displayedItem = null;
     let playingItem = null;
 
     // caption color reflects the TRUTH of playback, not an assumption —
@@ -471,11 +469,13 @@
     // global function since inline onclick (the pattern already proven reliable
     // on iOS everywhere else on this site) runs in global scope, not this closure
     window.toggleCaptionPlayback = function(){
-      if (!playingItem || !playingItem.audioEl) return;
-      if (playingItem.audioEl.paused) {
-        playingItem.audioEl.play().catch(() => {});
+      if (!displayedItem || !displayedItem.audioEl) return;
+      if (displayedItem.audioEl.paused) {
+        displayedItem.audioEl.currentTime = 0;
+        displayedItem.audioEl.play().catch(() => {});
+        playingItem = displayedItem;
       } else {
-        playingItem.audioEl.pause();
+        fadeOutAndStop(displayedItem);
       }
     };
 
@@ -494,6 +494,7 @@
           audioEl.pause();
           audioEl.currentTime = 0;
           audioEl.volume = 1; // reset so it's back to full volume next time it plays
+          if (playingItem === item) playingItem = null;
         }
       }
       requestAnimationFrame(step);
@@ -501,23 +502,6 @@
 
     function stopPlaying(){
       fadeOutAndStop(playingItem);
-      playingItem = null;
-      captionEl.classList.remove('visible');
-      captionEl.classList.remove('is-paused');
-    }
-
-    function startPlaying(item){
-      stopPlaying();
-      if (!item.track || !item.audioEl) return;
-      item.audioEl.currentTime = 0;
-      captionEl.classList.add('is-paused'); // honest default — flips to active only once 'playing' actually fires
-      item.audioEl.play().catch(() => {
-        // blocked until a real click/tap happens somewhere on the page — the caption tap handles that now
-      });
-      playingItem = item;
-      captionTitleEl.textContent = item.track.title;
-      captionArtistEl.textContent = item.track.artist;
-      captionEl.classList.add('visible');
     }
 
     function animate(now){
@@ -550,16 +534,17 @@
       const isSettled = !dragging && velocity === 0 && settleTarget === null;
       const focusTarget = hoveredItem || (isSettled ? items[centeredIndex] : null);
 
-      if (focusTarget !== dwellTarget) {
-        dwellTarget = focusTarget;
-        dwellSince = now;
-      } else if (dwellTarget && dwellTarget.track && playingItem !== dwellTarget && (now - dwellSince) >= FOCUS_DWELL_MS) {
-        startPlaying(dwellTarget);
-      }
-      if (!focusTarget || !focusTarget.track) {
+      if (focusTarget !== displayedItem) {
         if (playingItem) stopPlaying();
-      } else if (playingItem && playingItem !== focusTarget) {
-        stopPlaying();
+        displayedItem = focusTarget;
+        if (displayedItem && displayedItem.track) {
+          captionTitleEl.textContent = displayedItem.track.title;
+          captionArtistEl.textContent = displayedItem.track.artist;
+          captionEl.classList.add('is-paused'); // always starts paused-looking — nothing auto-plays anymore
+          captionEl.classList.add('visible');
+        } else {
+          captionEl.classList.remove('visible');
+        }
       }
 
       items.forEach(item => {
