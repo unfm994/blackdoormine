@@ -184,6 +184,12 @@
       window.location.href = '/design/';
     }, 250);
   }
+
+  window.addEventListener('pageshow', function(event){
+    if (event.persisted) {
+      document.body.classList.remove('page-fade-out');
+    }
+  });
 </script>
 
 </body>
