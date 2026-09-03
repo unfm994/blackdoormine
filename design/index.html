@@ -251,7 +251,8 @@
     const isMobileViewport = window.innerWidth <= 700;
     const ITEM_SIZE = isMobileViewport ? 1.0 : 1.4;
     const REFLECTION_RATIO = 0.55;
-    const spacing = ITEM_SIZE * 0.97; // final small nudge — was just barely touching before
+    const centerGap = ITEM_SIZE * 1.15;   // extra breathing room specifically between center and its immediate neighbor
+    const outerSpacing = ITEM_SIZE * 0.55; // tighter — outer items pack closer to each other, not spread out
     const depthStep = 3.2;
 
     const items = [];
@@ -507,7 +508,9 @@
         d = d - count * Math.round(d / count);
         const absD = Math.abs(d);
 
-        const x = d * spacing;
+        const x = absD <= 1
+          ? d * centerGap
+          : Math.sign(d) * (centerGap + (absD - 1) * outerSpacing);
         const clampedD = Math.max(-1, Math.min(1, d));
         const rotY = -clampedD * (Math.PI * 0.4); // curled hard — 72deg, well clear of the flat center tile even at tight milkcrate spacing
         const z = -Math.min(absD, 7) * depthStep;
