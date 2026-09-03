@@ -97,7 +97,7 @@
     margin-bottom:5px;
   }
   #trackCaption .track-artist{
-    color:#8f8f89;
+    color:#f4f4f2;
     font-size:9px;
     letter-spacing:0.1em;
   }
@@ -226,16 +226,16 @@
       rc.width = sourceCanvas.width;
       rc.height = Math.round(sourceCanvas.height * reflectionHeightRatio);
       const ctx = rc.getContext('2d');
-      // draw the source flipped vertically, cropped to the top slice (closest to the mirror line)
+      // draw the source flipped vertically, cropped to the top slice (closest to the mirror line) — fully opaque
       ctx.save();
       ctx.scale(1, -1);
       ctx.drawImage(sourceCanvas, 0, -rc.height);
       ctx.restore();
-      // fade it out top-to-bottom (top = nearest the real artwork = most visible)
-      ctx.globalCompositeOperation = 'destination-in';
+      // darken it top-to-bottom via multiply blend — this changes color, not alpha, so it stays fully solid
+      ctx.globalCompositeOperation = 'multiply';
       const grad = ctx.createLinearGradient(0, 0, 0, rc.height);
-      grad.addColorStop(0, 'rgba(0,0,0,0.45)');
-      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      grad.addColorStop(0, 'rgba(255,255,255,1)'); // white = no darkening at the top, nearest the real artwork
+      grad.addColorStop(1, 'rgba(0,0,0,1)'); // black = fully darkened by the bottom
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, rc.width, rc.height);
       return rc;
@@ -273,7 +273,7 @@
       const reflTex = new THREE.CanvasTexture(reflCanvas);
       const reflHeight = ITEM_SIZE * REFLECTION_RATIO;
       const reflGeo = new THREE.PlaneGeometry(ITEM_SIZE, reflHeight);
-      const reflMat = new THREE.MeshBasicMaterial({ map: reflTex, transparent: true, side: THREE.DoubleSide, depthWrite: true, depthTest: true });
+      const reflMat = new THREE.MeshBasicMaterial({ map: reflTex, transparent: false, side: THREE.DoubleSide, depthWrite: true, depthTest: true });
       const reflMesh = new THREE.Mesh(reflGeo, reflMat);
       reflMesh.position.set(0, -(ITEM_SIZE / 2) - (reflHeight / 2), 0);
       group.add(reflMesh);
