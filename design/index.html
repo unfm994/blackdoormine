@@ -363,13 +363,6 @@
     const MAX_VELOCITY = 9;
     const SETTLE_THRESHOLD = 0.06;
 
-    // shortest path to a given slot, going whichever way around the loop is closer
-    function shortestTargetFor(itemIndex, fromOffset){
-      const raw = itemIndex - fromOffset;
-      const wrapped = raw - count * Math.round(raw / count);
-      return fromOffset + wrapped;
-    }
-
     // ---------- desktop: wheel adds spin, harder/faster scrolling = more momentum ----------
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -412,38 +405,6 @@
     });
 
     // ---------- raycasting shared by hover + click ----------
-    const raycaster = new THREE.Raycaster();
-    const pointer = new THREE.Vector2();
-    function pointerToNDC(clientX, clientY){
-      const rect = canvas.getBoundingClientRect();
-      pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
-      pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
-    }
-    function raycastItem(){
-      raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(items.map(it => it.dimMesh));
-      if (hits.length) return items.find(it => it.dimMesh === hits[0].object);
-      return null;
-    }
-
-    // ---------- real mouse hover: fades the bright layer in smoothly ----------
-    let hoveredItem = null;
-    canvas.addEventListener('mousemove', (e) => {
-      pointerToNDC(e.clientX, e.clientY);
-      hoveredItem = raycastItem();
-    });
-    canvas.addEventListener('mouseleave', () => { hoveredItem = null; });
-
-    // ---------- tap/click a visible item to select it — eases the short way around the loop ----------
-    canvas.addEventListener('click', (e) => {
-      pointerToNDC(e.clientX, e.clientY);
-      const hit = raycastItem();
-      if (hit) {
-        velocity = 0;
-        settleTarget = shortestTargetFor(hit.i, offset);
-      }
-    });
-
     let lastTime = performance.now();
 
     // ---------- preview playback: dwell 1s on a track before it plays, only one plays at a time ----------
@@ -532,7 +493,7 @@
       // genuinely at rest — otherwise this flickers mid-transition and the dwell timer
       // never gets a clean second to count up
       const isSettled = !dragging && velocity === 0 && settleTarget === null;
-      const focusTarget = hoveredItem || (isSettled ? items[centeredIndex] : null);
+      const focusTarget = isSettled ? items[centeredIndex] : null;
 
       if (focusTarget !== displayedItem) {
         if (playingItem) stopPlaying();
