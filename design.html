@@ -225,7 +225,7 @@
       const reflTex = new THREE.CanvasTexture(reflCanvas);
       const reflHeight = ITEM_SIZE * REFLECTION_RATIO;
       const reflGeo = new THREE.PlaneGeometry(ITEM_SIZE, reflHeight);
-      const reflMat = new THREE.MeshBasicMaterial({ map: reflTex, transparent: true, side: THREE.DoubleSide, depthWrite: false });
+      const reflMat = new THREE.MeshBasicMaterial({ map: reflTex, transparent: true, side: THREE.DoubleSide, depthWrite: true, depthTest: true });
       const reflMesh = new THREE.Mesh(reflGeo, reflMat);
       reflMesh.position.set(0, -(ITEM_SIZE / 2) - (reflHeight / 2), 0);
       group.add(reflMesh);
