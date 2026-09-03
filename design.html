@@ -6,6 +6,9 @@
 <meta name="color-scheme" content="dark only">
 <meta name="theme-color" content="#000000">
 <title>black_door_mine — design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{
@@ -92,13 +95,17 @@
   }
   #trackCaption .track-title{
     color:#f4f4f2;
-    font-size:11px;
-    letter-spacing:0.08em;
+    font-family:'Inter', sans-serif;
+    font-weight:500;
+    font-size:12px;
+    letter-spacing:0.02em;
     margin-bottom:5px;
   }
   #trackCaption .track-artist{
     color:#f4f4f2;
-    font-size:9px;
+    font-family:'Inter', sans-serif;
+    font-weight:400;
+    font-size:10px;
     letter-spacing:0.1em;
   }
   @media (max-width:700px){
@@ -234,8 +241,8 @@
       // darken it top-to-bottom via multiply blend — this changes color, not alpha, so it stays fully solid
       ctx.globalCompositeOperation = 'multiply';
       const grad = ctx.createLinearGradient(0, 0, 0, rc.height);
-      grad.addColorStop(0, 'rgba(255,255,255,1)'); // white = no darkening at the top, nearest the real artwork
-      grad.addColorStop(1, 'rgba(0,0,0,1)'); // black = fully darkened by the bottom
+      grad.addColorStop(0, 'rgba(120,120,120,1)'); // already dimmed right at the seam, not identical to the source
+      grad.addColorStop(1, 'rgba(0,0,0,1)'); // fully black by the bottom
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, rc.width, rc.height);
       return rc;
