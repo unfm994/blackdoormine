@@ -252,7 +252,7 @@
     const ITEM_SIZE = isMobileViewport ? 1.0 : 1.4;
     const REFLECTION_RATIO = 0.55;
     const spacing = ITEM_SIZE * 0.55; // tight, like records actually packed together — only the center reads as separated
-    const depthStep = 2.6;
+    const depthStep = 3.2;
 
     const items = [];
     const count = 10;
@@ -325,7 +325,7 @@
     let velocity = 0;          // offset-units per second, decays via friction
     let settleTarget = null;   // once velocity dies down, ease smoothly onto the nearest slot
     let dragging = false;
-    const FRICTION = 2.2;       // higher = slows down faster
+    const FRICTION = 3.4;       // higher = slows down faster, less coasting
     const MAX_VELOCITY = 9;
     const SETTLE_THRESHOLD = 0.06;
 
@@ -449,7 +449,7 @@
       if (dragging) {
         // offset already being driven directly by touchmove — nothing to do here
       } else if (settleTarget !== null) {
-        offset += (settleTarget - offset) * 0.15;
+        offset += (settleTarget - offset) * 0.26;
         if (Math.abs(settleTarget - offset) < 0.001) {
           offset = settleTarget;
           settleTarget = null;
@@ -490,7 +490,7 @@
 
         const x = d * spacing;
         const clampedD = Math.max(-1, Math.min(1, d));
-        const rotY = -clampedD * (Math.PI / 3); // curls inward toward the center — steeper than 45deg specifically to clear the tight milkcrate spacing without touching
+        const rotY = -clampedD * (Math.PI * 0.4); // curled hard — 72deg, well clear of the flat center tile even at tight milkcrate spacing
         const z = -Math.min(absD, 7) * depthStep;
         const scale = 1; // every square is the same size — only position, tilt, and depth differ
 
