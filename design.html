@@ -135,6 +135,7 @@
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
     camera.position.set(0, 0, 7);
+    camera.lookAt(0, 0, 0);
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
@@ -194,7 +195,7 @@
     const isMobileViewport = window.innerWidth <= 700;
     const ITEM_SIZE = isMobileViewport ? 1.0 : 1.4;
     const REFLECTION_RATIO = 0.55;
-    const spacing = ITEM_SIZE * 1.4; // real gaps between covers, each sits in its own space
+    const spacing = ITEM_SIZE * 0.55; // tight, like records actually packed together — only the center reads as separated
     const depthStep = 2.1;
 
     const items = [];
@@ -355,7 +356,7 @@
 
         const x = d * spacing;
         const clampedD = Math.max(-1, Math.min(1, d));
-        const rotY = clampedD * (Math.PI / 4); // 0deg at dead center, snaps to a hard 45deg the instant it's off-center
+        const rotY = -clampedD * (Math.PI / 4); // curls inward toward the center, like fanning through a crate — 0deg dead center, hard 45deg the instant it's off
         const z = -Math.min(absD, 7) * depthStep;
         const scale = 1; // every square is the same size — only position, tilt, and depth differ
 
