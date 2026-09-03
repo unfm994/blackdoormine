@@ -473,7 +473,7 @@
     function fadeOutAndStop(item, onComplete){
       if (!item || !item.audioEl) { if (onComplete) onComplete(); return; }
       const audioEl = item.audioEl;
-      const fadeDuration = 350;
+      const fadeDuration = 450;
       const startVolume = audioEl.volume;
       const startTime = performance.now();
       function step(now){
