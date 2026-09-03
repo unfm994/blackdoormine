@@ -404,6 +404,29 @@
       velocity = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, velocity));
     });
 
+    // ---------- click a square to jump to it — navigation only, doesn't touch playback ----------
+    // the caption still won't update until isSettled goes true, so switching tracks stays
+    // deferred until the reel actually finishes moving, exactly like scroll-driven centering
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    function shortestTargetFor(itemIndex, fromOffset){
+      const raw = itemIndex - fromOffset;
+      const wrapped = raw - count * Math.round(raw / count);
+      return fromOffset + wrapped;
+    }
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(items.map(it => it.dimMesh));
+      if (hits.length) {
+        const hit = items.find(it => it.dimMesh === hits[0].object);
+        velocity = 0;
+        settleTarget = shortestTargetFor(hit.i, offset);
+      }
+    });
+
     // ---------- raycasting shared by hover + click ----------
     let lastTime = performance.now();
 
@@ -419,10 +442,10 @@
     items.forEach(function(item){
       if (!item.audioEl) return;
       item.audioEl.addEventListener('playing', function(){
-        if (playingItem === item) captionEl.classList.remove('is-paused');
+        if (displayedItem === item) captionEl.classList.remove('is-paused');
       });
       item.audioEl.addEventListener('pause', function(){
-        if (playingItem === item) captionEl.classList.add('is-paused');
+        if (displayedItem === item) captionEl.classList.add('is-paused');
       });
     });
 
@@ -432,6 +455,7 @@
     window.toggleCaptionPlayback = function(){
       if (!displayedItem || !displayedItem.audioEl) return;
       if (displayedItem.audioEl.paused) {
+        if (playingItem && playingItem !== displayedItem) fadeOutAndStop(playingItem);
         displayedItem.audioEl.currentTime = 0;
         displayedItem.audioEl.play().catch(() => {});
         playingItem = displayedItem;
@@ -459,10 +483,6 @@
         }
       }
       requestAnimationFrame(step);
-    }
-
-    function stopPlaying(){
-      fadeOutAndStop(playingItem);
     }
 
     function animate(now){
@@ -496,12 +516,15 @@
       const focusTarget = isSettled ? items[centeredIndex] : null;
 
       if (focusTarget !== displayedItem) {
-        if (playingItem) stopPlaying();
         displayedItem = focusTarget;
         if (displayedItem && displayedItem.track) {
           captionTitleEl.textContent = displayedItem.track.title;
           captionArtistEl.textContent = displayedItem.track.artist;
-          captionEl.classList.add('is-paused'); // always starts paused-looking — nothing auto-plays anymore
+          if (displayedItem.audioEl && !displayedItem.audioEl.paused) {
+            captionEl.classList.remove('is-paused'); // this one's actually already playing in the background
+          } else {
+            captionEl.classList.add('is-paused');
+          }
           captionEl.classList.add('visible');
         } else {
           captionEl.classList.remove('visible');
