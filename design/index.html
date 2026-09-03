@@ -149,6 +149,13 @@
     }, 250);
   }
 
+  window.addEventListener('pageshow', function(event){
+    if (event.persisted) {
+      document.body.classList.remove('page-fade-out');
+      document.body.classList.add('page-fade-in');
+    }
+  });
+
   (function initDesignCarousel(){
     const heroSection = document.querySelector('main');
     const canvas = document.getElementById('designCanvas');
@@ -252,7 +259,7 @@
     const ITEM_SIZE = isMobileViewport ? 1.0 : 1.4;
     const REFLECTION_RATIO = 0.55;
     const baseSpacing = ITEM_SIZE * 0.97;   // back to exactly what it was two versions ago
-    const centerExtraGap = ITEM_SIZE * 0.15; // small, dedicated addition — only widens the center's own gap, nothing else
+    const centerExtraGap = ITEM_SIZE * 0.10; // small, dedicated addition — only widens the center's own gap, nothing else
     const depthStep = 3.2;
 
     const items = [];
