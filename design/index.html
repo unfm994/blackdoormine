@@ -143,7 +143,7 @@
 
 <main>
   <canvas id="designCanvas"></canvas>
-  <div id="trackCaption">
+  <div id="trackCaption" onclick="toggleCaptionPlayback()">
     <div class="track-title"></div>
     <div class="track-artist"></div>
   </div>
@@ -462,17 +462,17 @@
       });
     });
 
-    // tapping the caption itself is the play/pause control — a real tap always
-    // works on iOS, permanently sidestepping the autoplay block rather than
-    // fighting it
-    captionEl.addEventListener('click', function(){
+    // tapping the caption itself is the play/pause control — exposed as a real
+    // global function since inline onclick (the pattern already proven reliable
+    // on iOS everywhere else on this site) runs in global scope, not this closure
+    window.toggleCaptionPlayback = function(){
       if (!playingItem || !playingItem.audioEl) return;
       if (playingItem.audioEl.paused) {
         playingItem.audioEl.play().catch(() => {});
       } else {
         playingItem.audioEl.pause();
       }
-    });
+    };
 
     function fadeOutAndStop(item){
       if (!item || !item.audioEl) return;
