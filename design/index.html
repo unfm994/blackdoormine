@@ -455,17 +455,23 @@
     window.toggleCaptionPlayback = function(){
       if (!displayedItem || !displayedItem.audioEl) return;
       if (displayedItem.audioEl.paused) {
-        if (playingItem && playingItem !== displayedItem) fadeOutAndStop(playingItem);
-        displayedItem.audioEl.currentTime = 0;
-        displayedItem.audioEl.play().catch(() => {});
-        playingItem = displayedItem;
+        const startNew = function(){
+          displayedItem.audioEl.currentTime = 0;
+          displayedItem.audioEl.play().catch(() => {});
+          playingItem = displayedItem;
+        };
+        if (playingItem && playingItem !== displayedItem) {
+          fadeOutAndStop(playingItem, startNew);
+        } else {
+          startNew();
+        }
       } else {
         fadeOutAndStop(displayedItem);
       }
     };
 
-    function fadeOutAndStop(item){
-      if (!item || !item.audioEl) return;
+    function fadeOutAndStop(item, onComplete){
+      if (!item || !item.audioEl) { if (onComplete) onComplete(); return; }
       const audioEl = item.audioEl;
       const fadeDuration = 350;
       const startVolume = audioEl.volume;
@@ -480,6 +486,7 @@
           audioEl.currentTime = 0;
           audioEl.volume = 1; // reset so it's back to full volume next time it plays
           if (playingItem === item) playingItem = null;
+          if (onComplete) onComplete();
         }
       }
       requestAnimationFrame(step);
