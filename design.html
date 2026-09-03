@@ -192,9 +192,9 @@
     }
 
     const isMobileViewport = window.innerWidth <= 700;
-    const ITEM_SIZE = isMobileViewport ? 0.95 : 1.3;
+    const ITEM_SIZE = isMobileViewport ? 1.0 : 1.4;
     const REFLECTION_RATIO = 0.55;
-    const spacing = ITEM_SIZE * 0.32; // packed tight, like records pressed together in a crate
+    const spacing = ITEM_SIZE * 1.4; // real gaps between covers, each sits in its own space
     const depthStep = 2.1;
 
     const items = [];
@@ -356,9 +356,8 @@
         const x = d * spacing;
         const clampedD = Math.max(-1, Math.min(1, d));
         const rotY = clampedD * (Math.PI / 4); // 0deg at dead center, snaps to a hard 45deg the instant it's off-center
-        const centerPop = Math.max(0, 1 - absD); // 1 exactly at center, fades out by one slot away
-        const z = -Math.min(absD, 7) * depthStep + centerPop * 0.25;
-        const scale = Math.max(0.5, 1.15 - absD * 0.35); // modest pop — tuned to fit the tight crate spacing without covering neighbors
+        const z = -Math.min(absD, 7) * depthStep;
+        const scale = 1; // every square is the same size — only position, tilt, and depth differ
 
         item.group.position.set(x, ITEM_SIZE * 0.12, z);
         item.group.rotation.y = rotY;
