@@ -89,9 +89,24 @@
     pointer-events:none;
     opacity:0;
     transition:opacity 0.3s ease;
+    cursor:pointer;
   }
   #trackCaption.visible{
+    pointer-events:auto;
     opacity:1;
+  }
+  #trackCaption .track-title,
+  #trackCaption .track-artist{
+    transition:color 0.3s ease, opacity 0.3s ease;
+  }
+  #trackCaption.is-paused .track-title,
+  #trackCaption.is-paused .track-artist{
+    color:#6a6a67;
+    animation:captionBreathe 2.6s ease-in-out infinite;
+  }
+  @keyframes captionBreathe{
+    0%, 100%{opacity:0.55;}
+    50%{opacity:1;}
   }
   #trackCaption .track-title{
     color:#f4f4f2;
@@ -434,6 +449,30 @@
     let dwellSince = 0;
     let playingItem = null;
 
+    // caption color reflects the TRUTH of playback, not an assumption —
+    // starts paused-looking, only turns "active" once audio genuinely starts
+    items.forEach(function(item){
+      if (!item.audioEl) return;
+      item.audioEl.addEventListener('playing', function(){
+        if (playingItem === item) captionEl.classList.remove('is-paused');
+      });
+      item.audioEl.addEventListener('pause', function(){
+        if (playingItem === item) captionEl.classList.add('is-paused');
+      });
+    });
+
+    // tapping the caption itself is the play/pause control — a real tap always
+    // works on iOS, permanently sidestepping the autoplay block rather than
+    // fighting it
+    captionEl.addEventListener('click', function(){
+      if (!playingItem || !playingItem.audioEl) return;
+      if (playingItem.audioEl.paused) {
+        playingItem.audioEl.play().catch(() => {});
+      } else {
+        playingItem.audioEl.pause();
+      }
+    });
+
     function fadeOutAndStop(item){
       if (!item || !item.audioEl) return;
       const audioEl = item.audioEl;
@@ -458,14 +497,16 @@
       fadeOutAndStop(playingItem);
       playingItem = null;
       captionEl.classList.remove('visible');
+      captionEl.classList.remove('is-paused');
     }
 
     function startPlaying(item){
       stopPlaying();
       if (!item.track || !item.audioEl) return;
       item.audioEl.currentTime = 0;
+      captionEl.classList.add('is-paused'); // honest default — flips to active only once 'playing' actually fires
       item.audioEl.play().catch(() => {
-        // blocked until a real click/tap happens somewhere on the page — same rule as everywhere else on this site
+        // blocked until a real click/tap happens somewhere on the page — the caption tap handles that now
       });
       playingItem = item;
       captionTitleEl.textContent = item.track.title;
