@@ -90,6 +90,7 @@
     opacity:0;
     transition:opacity 0.3s ease;
     cursor:pointer;
+    touch-action:manipulation;
   }
   #trackCaption.visible{
     pointer-events:auto;
@@ -131,7 +132,7 @@
   }
 </style>
 </head>
-<body>
+<body ontouchstart="">
 
 <header>
 <span class="logo-btn" role="button" tabindex="0" aria-label="black_door_mine — refresh"
