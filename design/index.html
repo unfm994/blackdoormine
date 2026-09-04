@@ -478,7 +478,7 @@
       const startTime = performance.now();
       function step(now){
         const t = Math.min(1, (now - startTime) / fadeDuration);
-        audioEl.volume = startVolume * (1 - t);
+        audioEl.volume = Math.max(0, Math.min(1, startVolume * (1 - t)));
         if (t < 1) {
           requestAnimationFrame(step);
         } else {
